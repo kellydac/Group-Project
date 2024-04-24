@@ -69,7 +69,7 @@ def calculate_summary_statistics(df, performance_metrics):
 def plot_performance_by_age(summary_stats, performance_metric):
     # Plot line graph for performance metric by age category
     plt.figure(figsize=(10, 6))
-    plt.plot(summary_stats['age_group'], summary_stats['mean'], marker='o', label='Mean', color='red')
+    plt.plot(summary_stats['age_group'], summary_stats['mean'], marker='o', label='Mean', color='orange')
     plt.fill_between(summary_stats['age_group'], summary_stats['mean'] - summary_stats['std'], summary_stats['mean'] + summary_stats['std'], alpha=0.2)
     plt.xlabel('Age Group (years)')
     plt.ylabel(performance_metric)
