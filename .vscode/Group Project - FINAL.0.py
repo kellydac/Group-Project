@@ -31,9 +31,9 @@ def calculate_age(df):
 
 # Define function to group players into age categories
 def categorize_age(df):
-    # Define age categories from 20 to 40 years old
-    bins = [20, 23, 26, 29, 32, 35, 38, 41]
-    labels = ['20-22', '23-25', '26-28', '29-31', '32-34', '35-37', '38-40']
+    # Define age categories from 20 to 38 years old
+    bins = [20, 24, 28, 32, 36, 40]
+    labels = ['20-24', '25-28', '29-32', '33-36', '37-40']
     
     # Categorize age using cut function
     df['age_group'] = pd.cut(df['age'], bins=bins, labels=labels, right=False)
@@ -50,18 +50,12 @@ def calculate_batting_average(df):
 
 # Define function to calculate summary statistics for performance metrics
 def calculate_summary_statistics(df, performance_metrics):
-    # Filter data where performance metric is greater than 0
-    df = df[df[performance_metrics] > 0]
-    
     # Group data by age group and calculate mean, median, and standard deviation of performance metrics
     summary_stats = df.groupby('age_group')[performance_metrics].agg(['mean', 'median', 'std']).reset_index()
     
-    print(f"Summary Statistics Dataframe for {performance_metrics}:")
-    print(summary_stats)  # Print first few rows of summary statistics dataframe
-    
-    # Find age range representing peak performance
-    peak_age_group = summary_stats.loc[summary_stats['mean'].idxmax(), 'age_group']
-    print(f"Peak Performance Age Range for {performance_metrics}: {peak_age_group} years old.")
+    print("Summary Statistics Dataframe:")
+    print(summary_stats)
+    print()  # Empty line for readability
     
     return summary_stats
 
@@ -69,14 +63,15 @@ def calculate_summary_statistics(df, performance_metrics):
 def plot_performance_by_age(summary_stats, performance_metric):
     # Plot line graph for performance metric by age category
     plt.figure(figsize=(10, 6))
-    plt.plot(summary_stats['age_group'], summary_stats['mean'], marker='o', label='Mean', color='red')
-    plt.fill_between(summary_stats['age_group'], summary_stats['mean'] - summary_stats['std'], summary_stats['mean'] + summary_stats['std'], alpha=0.2)
-    plt.xlabel('Age Group (years)')
+    plt.plot(summary_stats['age_group'], summary_stats[f'{performance_metric}_mean'], marker='o', label='Mean', color='red')
+    plt.fill_between(summary_stats['age_group'], summary_stats[f'{performance_metric}_mean'] - summary_stats[f'{performance_metric}_std'], summary_stats[f'{performance_metric}_mean'] + summary_stats[f'{performance_metric}_std'], alpha=0.2)
+    plt.xlabel('Age Group')
     plt.ylabel(performance_metric)
     plt.title(f'{performance_metric} by Age Group')
     plt.legend()
     plt.grid(True)
     plt.xticks(rotation=45)
+    plt.ylim(bottom=0)  # Start the y-axis from 0
     plt.tight_layout()
     plt.show()
 
@@ -85,40 +80,40 @@ def main():
     # Merge data from spreadsheets
     batting_df, pitching_df = merge_data(folder_path)
     
-    # Print column names of batting and pitching dataframes
-    print("Batting Dataframe Columns:", batting_df.columns)
-    print("Pitching Dataframe Columns:", pitching_df.columns)
-    
     # Calculate player age for batting and pitching data
     batting_df = calculate_age(batting_df)
     pitching_df = calculate_age(pitching_df)
+    
+    # Filter data based on age and performance criteria
+    batting_df = batting_df[(batting_df['age'] >= 20) & (batting_df['age'] <= 38) & (batting_df['AB'] > 0)]
+    pitching_df = pitching_df[(pitching_df['age'] >= 20) & (pitching_df['age'] <= 38) & (pitching_df['IPouts'] > 0) & (pitching_df['ERA'] != 0)]
     
     # Categorize player age into age groups
     batting_df = categorize_age(batting_df)
     pitching_df = categorize_age(pitching_df)
     
-    # Calculate batting average
+    # Calculate batting average for batting data
     batting_df = calculate_batting_average(batting_df)
     
     # List of performance metrics to analyze
-    batting_performance_metrics = {'Home Runs': 'HR', 'At Bats': 'AB', 'Strikeouts': 'SO', 'Batting Average': 'batting_avg'}
-    pitching_performance_metrics = {'Earned Run Average': 'ERA', 'Innings Pitched': 'IPouts', 'Strikeouts': 'SO'}
+    batting_performance_metrics = ['HR', 'AB', 'SO', 'batting_avg']
+    pitching_performance_metrics = ['ERA', 'IPouts']
     
-    # Analyze each performance metric for batting
-    for metric_name, metric_abbr in batting_performance_metrics.items():
-        # Calculate summary statistics for the metric by age group for batting
-        batting_summary_stats = calculate_summary_statistics(batting_df, metric_abbr)
-        
-        # Plot line graph for the metric by age group for batting
-        plot_performance_by_age(batting_summary_stats, metric_name)
+    # Calculate summary statistics for batting performance metrics
+    print("Batting Summary Statistics:")
+    batting_summary_stats = calculate_summary_statistics(batting_df, batting_performance_metrics)
     
-    # Analyze each performance metric for pitching
-    for metric_name, metric_abbr in pitching_performance_metrics.items():
-        # Calculate summary statistics for the metric by age group for pitching
-        pitching_summary_stats = calculate_summary_statistics(pitching_df, metric_abbr)
-        
-        # Plot line graph for the metric by age group for pitching
-        plot_performance_by_age(pitching_summary_stats, metric_name)
+    # Plot line graph for batting performance metrics by age category
+    for metric in batting_performance_metrics:
+        plot_performance_by_age(batting_summary_stats, metric)
+    
+    # Calculate summary statistics for pitching performance metrics
+    print("Pitching Summary Statistics:")
+    pitching_summary_stats = calculate_summary_statistics(pitching_df, pitching_performance_metrics)
+    
+    # Plot line graph for pitching performance metrics by age category
+    for metric in pitching_performance_metrics:
+        plot_performance_by_age(pitching_summary_stats, metric)
 
 if __name__ == "__main__":
     main()
