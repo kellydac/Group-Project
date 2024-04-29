@@ -59,14 +59,14 @@ def calculate_summary_statistics(df, performance_metrics):
     # Filter data where performance metric is greater than 0
     df = df[df[performance_metrics] > 0]
     
-    # Group data by age group and calculate mean, median, and standard deviation of performance metrics
-    summary_stats = df.groupby('age_group')[performance_metrics].agg(['mean', 'median', 'std']).reset_index()
+    # Group data by age group and calculate median and standard deviation of performance metrics
+    summary_stats = df.groupby('age_group')[performance_metrics].agg(['median', 'std']).reset_index()
     
     print(f"Summary Statistics Dataframe for {performance_metrics}:")
     print(summary_stats)  # Print first few rows of summary statistics dataframe
     
     # Find age range representing peak performance
-    peak_age_group = summary_stats.loc[summary_stats['mean'].idxmax(), 'age_group']
+    peak_age_group = summary_stats.loc[summary_stats['median'].idxmax(), 'age_group']
     print(f"Peak Performance Age Range for {performance_metrics}: {peak_age_group} years old.")
     
     return summary_stats
@@ -75,8 +75,8 @@ def calculate_summary_statistics(df, performance_metrics):
 def plot_performance_by_age(summary_stats, performance_metric):
     # Plot line graph for performance metric by age category
     plt.figure(figsize=(10, 6))
-    plt.plot(summary_stats['age_group'], summary_stats['mean'], marker='o', label='Mean', color='orange')
-    plt.fill_between(summary_stats['age_group'], summary_stats['mean'] - summary_stats['std'], summary_stats['mean'] + summary_stats['std'], alpha=0.2)
+    plt.plot(summary_stats['age_group'], summary_stats['median'], marker='o', label='Median', color='blue')
+    plt.fill_between(summary_stats['age_group'], summary_stats['median'] - summary_stats['std'], summary_stats['median'] + summary_stats['std'], alpha=0.2)
     plt.xlabel('Age Group (years)')
     plt.ylabel(performance_metric)
     plt.title(f'{performance_metric} by Age Group')
@@ -107,7 +107,7 @@ def main():
     batting_df = calculate_batting_average(batting_df)
     
     # List of performance metrics to analyze
-    batting_performance_metrics = {'Home Runs': 'HR', 'At Bats': 'AB', 'Strikeouts': 'SO', 'Batting Average': 'batting_avg'}
+    batting_performance_metrics = {'Home Runs': 'HR', 'Batting Average': 'batting_avg'}
     pitching_performance_metrics = {'Earned Run Average': 'ERA', 'Innings Pitched': 'IPouts', 'Strikeouts': 'SO'}
     
     # Analyze each performance metric for batting
