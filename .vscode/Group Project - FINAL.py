@@ -12,6 +12,12 @@ def merge_data(folder_path):
     batting_df = pd.read_excel(os.path.join(folder_path, 'Batting.xlsx'))
     pitching_df = pd.read_excel(os.path.join(folder_path, 'Pitching.xlsx'))
     
+    # Filter batting data for players with over 100 AB
+    batting_df = batting_df[batting_df['AB'] > 100]
+    
+    # Filter pitching data for players with over 150 IPouts and more than zero ERA
+    pitching_df = pitching_df[(pitching_df['IPouts'] > 150) & (pitching_df['ERA'] > 0)]
+    
     # Merge People dataframe with Batting and Pitching dataframes using playerID as the key
     merged_batting_df = pd.merge(people_df, batting_df, on='playerID', how='inner')
     merged_pitching_df = pd.merge(people_df, pitching_df, on='playerID', how='inner')
