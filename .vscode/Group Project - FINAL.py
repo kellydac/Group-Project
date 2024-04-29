@@ -54,6 +54,22 @@ def calculate_batting_average(df):
     
     return df
 
+# Define function to calculate BB/K ratio for batting data
+def calculate_bb_k_ratio(df):
+    # Calculate BB/K ratio
+    df['bb_k_ratio'] = df['BB'] / df['SO']
+    df['bb_k_ratio'] = df['bb_k_ratio'].fillna(0)  # Fill NaN values with 0
+    
+    return df
+
+# Define function to calculate K/BB ratio for pitching data
+def calculate_k_bb_ratio(df):
+    # Calculate K/BB ratio
+    df['k_bb_ratio'] = df['SO'] / df['BB']
+    df['k_bb_ratio'] = df['k_bb_ratio'].fillna(0)  # Fill NaN values with 0
+    
+    return df
+
 # Define function to calculate summary statistics for performance metrics
 def calculate_summary_statistics(df, performance_metrics):
     # Filter data where performance metric is greater than 0
@@ -66,8 +82,12 @@ def calculate_summary_statistics(df, performance_metrics):
     print(summary_stats)  # Print first few rows of summary statistics dataframe
     
     # Find age range representing peak performance
-    peak_age_group = summary_stats.loc[summary_stats['median'].idxmax(), 'age_group']
+    if performance_metrics in ['ERA', 'BAOpp']:
+        peak_age_group = summary_stats.loc[summary_stats['median'].idxmin(), 'age_group']
+    else:
+        peak_age_group = summary_stats.loc[summary_stats['median'].idxmax(), 'age_group']
     print(f"Peak Performance Age Range for {performance_metrics}: {peak_age_group} years old.")
+    print(' ')
     
     return summary_stats
 
@@ -106,9 +126,15 @@ def main():
     # Calculate batting average
     batting_df = calculate_batting_average(batting_df)
     
+    # Calculate BB/K ratio for batting data
+    batting_df = calculate_bb_k_ratio(batting_df)
+    
+    # Calculate K/BB ratio for pitching data
+    pitching_df = calculate_k_bb_ratio(pitching_df)
+    
     # List of performance metrics to analyze
-    batting_performance_metrics = {'Home Runs': 'HR', 'Batting Average': 'batting_avg'}
-    pitching_performance_metrics = {'Earned Run Average': 'ERA', 'Innings Pitched': 'IPouts', 'Strikeouts': 'SO'}
+    batting_performance_metrics = {'Home Runs': 'HR', 'Batting Average': 'batting_avg', 'BB/K Ratio': 'bb_k_ratio'}
+    pitching_performance_metrics = {'Earned Run Average': 'ERA', 'Innings Pitched': 'IPouts', 'Strikeouts': 'SO', 'Opponent Batting Average': 'BAOpp', 'K/BB Ratio': 'k_bb_ratio'}
     
     # Analyze each performance metric for batting
     for metric_name, metric_abbr in batting_performance_metrics.items():
